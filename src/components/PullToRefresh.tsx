@@ -1,5 +1,5 @@
-import * as React from "react";
-import { DIRECTION, isTreeScrollable } from "../isScrollable";
+import * as React from 'react';
+import { DIRECTION, isTreeScrollable } from '../isScrollable';
 
 export interface PullToRefreshProps {
   pullDownContent: JSX.Element;
@@ -7,7 +7,7 @@ export interface PullToRefreshProps {
   refreshContent: JSX.Element;
   pullDownThreshold: number;
   onRefresh: () => Promise<any>;
-  triggerHeight?: number | "auto";
+  triggerHeight?: number | 'auto';
   backgroundColor?: string;
   containerStyle?: React.CSSProperties;
   startInvisible?: boolean;
@@ -37,8 +37,8 @@ export class PullToRefresh extends React.Component<
     const maxPullDownDistance =
       this.pullDown &&
       this.pullDown.firstChild &&
-      this.pullDown.firstChild["getBoundingClientRect"]
-        ? this.pullDown.firstChild["getBoundingClientRect"]().height
+      this.pullDown.firstChild['getBoundingClientRect']
+        ? this.pullDown.firstChild['getBoundingClientRect']().height
         : 0;
     this.setState({ maxPullDownDistance });
   }
@@ -67,12 +67,12 @@ export class PullToRefresh extends React.Component<
       return;
     }
 
-    this.container.addEventListener("touchstart", this.onTouchStart);
-    this.container.addEventListener("touchmove", this.onTouchMove);
-    this.container.addEventListener("touchend", this.onEnd);
-    this.container.addEventListener("mousedown", this.onTouchStart);
-    this.container.addEventListener("mousemove", this.onTouchMove);
-    this.container.addEventListener("mouseup", this.onEnd);
+    this.container.addEventListener('touchstart', this.onTouchStart);
+    this.container.addEventListener('touchmove', this.onTouchMove);
+    this.container.addEventListener('touchend', this.onEnd);
+    this.container.addEventListener('mousedown', this.onTouchStart);
+    this.container.addEventListener('mousemove', this.onTouchMove);
+    this.container.addEventListener('mouseup', this.onTouchEnd);
   }
 
   public componentWillUnmount(): void {
@@ -80,20 +80,20 @@ export class PullToRefresh extends React.Component<
       return;
     }
 
-    this.container.removeEventListener("touchstart", this.onTouchStart);
-    this.container.removeEventListener("touchmove", this.onTouchMove);
-    this.container.removeEventListener("touchend", this.onEnd);
-    this.container.removeEventListener("mousedown", this.onTouchStart);
-    this.container.removeEventListener("mousemove", this.onTouchMove);
-    this.container.removeEventListener("mouseup", this.onEnd);
+    this.container.removeEventListener('touchstart', this.onTouchStart);
+    this.container.removeEventListener('touchmove', this.onTouchMove);
+    this.container.removeEventListener('touchend', this.onEnd);
+    this.container.removeEventListener('mousedown', this.onTouchStart);
+    this.container.removeEventListener('mousemove', this.onTouchMove);
+    this.container.removeEventListener('mouseup', this.onTouchEnd);
   }
 
   private onTouchStart(e) {
-    const { triggerHeight = 40 } = this.props;
-    this.startY = e["pageY"] || e.touches[0].pageY;
+    const { triggerHeight = 200 } = this.props;
+    this.startY = e['pageY'] || e.touches[0].pageY;
     this.currentY = this.startY;
 
-    if (triggerHeight === "auto") {
+    if (triggerHeight === 'auto') {
       const target = e.target;
 
       const container = this.container;
@@ -102,7 +102,7 @@ export class PullToRefresh extends React.Component<
       }
 
       // an element we're touching can be scrolled up, so gesture is going to be a scroll gesture
-      if (e.type === "touchstart" && isTreeScrollable(target, DIRECTION.up)) {
+      if (e.type === 'touchstart' && isTreeScrollable(target, DIRECTION.up)) {
         return;
       }
 
@@ -121,8 +121,45 @@ export class PullToRefresh extends React.Component<
     }
 
     this.dragging = true;
-    this.container.style.transition = "transform 0.2s cubic-bezier(0,0,0.31,1)";
-    this.pullDown.style.transition = "transform 0.2s cubic-bezier(0,0,0.31,1)";
+    this.container.style.transition = 'transform 0.2s cubic-bezier(0,0,0.31,1)';
+    this.pullDown.style.transition = 'transform 0.2s cubic-bezier(0,0,0.31,1)';
+  }
+
+  private onTouchEnd(e) {
+    const { triggerHeight = 200 } = this.props;
+    this.startY = e['pageY'] || e.touches[0].pageY;
+    this.currentY = this.startY;
+
+    if (triggerHeight === 'auto') {
+      const target = e.target;
+
+      const container = this.container;
+      if (!container) {
+        return;
+      }
+
+      // an element we're touching can be scrolled up, so gesture is going to be a scroll gesture
+      if (e.type === 'mouseup' && isTreeScrollable(target, DIRECTION.up)) {
+        return;
+      }
+
+      // even though we're not scrolling, the pull-to-refresh isn't visible to the user so cancel
+      if (container.getBoundingClientRect().bottom < 0) {
+        return;
+      }
+    } else {
+      const bottom =
+        this.container.getBoundingClientRect().bottom ||
+        this.container.getBoundingClientRect().y ||
+        0;
+      if (this.startY - bottom > triggerHeight) {
+        return;
+      }
+    }
+
+    this.dragging = true;
+    this.container.style.transition = 'transform 0.2s cubic-bezier(0,0,0.31,1)';
+    this.pullDown.style.transition = 'transform 0.2s cubic-bezier(0,0,0.31,1)';
   }
 
   private onTouchMove(e) {
@@ -130,7 +167,7 @@ export class PullToRefresh extends React.Component<
       return;
     }
 
-    this.currentY = e["pageY"] || e.touches[0].pageY;
+    this.currentY = e['pageY'] || e.touches[0].pageY;
     if (this.currentY < this.startY) {
       return;
     }
@@ -149,11 +186,11 @@ export class PullToRefresh extends React.Component<
       return;
     }
 
-    this.container.style.overflow = "visible";
+    this.container.style.overflow = 'visible';
     this.container.style.transform = `translate(0px, ${
       this.currentY - this.startY
     }px)`;
-    this.pullDown.style.visibility = "visible";
+    this.pullDown.style.visibility = 'visible';
   }
 
   private onEnd() {
@@ -163,13 +200,13 @@ export class PullToRefresh extends React.Component<
 
     if (!this.state.pullToRefreshThresholdBreached) {
       this.pullDown.style.visibility = this.props.startInvisible
-        ? "hidden"
-        : "visible";
+        ? 'hidden'
+        : 'visible';
       this.initContainer();
       return;
     }
 
-    this.container.style.overflow = "visible";
+    this.container.style.overflow = 'visible';
     this.container.style.transform = `translate(0px, ${this.props.pullDownThreshold}px)`;
     this.setState(
       {
@@ -185,15 +222,15 @@ export class PullToRefresh extends React.Component<
             });
           }, 200);
         });
-      },
+      }
     );
   }
 
   private initContainer() {
     requestAnimationFrame(() => {
       if (this.container) {
-        this.container.style.overflow = "auto";
-        this.container.style.transform = "none";
+        this.container.style.overflow = 'auto';
+        this.container.style.transform = 'none';
       }
     });
   }
@@ -208,12 +245,12 @@ export class PullToRefresh extends React.Component<
       ? releaseContent
       : pullDownContent;
     const contentStyle: React.CSSProperties = {
-      position: "absolute",
-      overflow: "hidden",
+      position: 'absolute',
+      overflow: 'hidden',
       left: 0,
       right: 0,
       top: 0,
-      visibility: startInvisible ? "hidden" : "visible",
+      visibility: startInvisible ? 'hidden' : 'visible',
     };
     return (
       <div id="ptr-pull-down" style={contentStyle} ref={this.pullDownRef}>
@@ -225,10 +262,10 @@ export class PullToRefresh extends React.Component<
   public render() {
     const { backgroundColor } = this.props;
     const containerStyle: React.CSSProperties = {
-      height: "auto",
-      overflow: "hidden",
-      WebkitOverflowScrolling: "touch",
-      position: "relative",
+      height: 'auto',
+      overflow: 'hidden',
+      WebkitOverflowScrolling: 'touch',
+      position: 'relative',
       zIndex: 1,
     };
 
